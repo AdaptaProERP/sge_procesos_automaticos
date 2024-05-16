@@ -104,7 +104,7 @@ PROCE MAIN(uPar)
    oErp:nColor :=1          // Color a Mostrar
    oErp:nColor :=IF(nTotal=nCantid .AND. nTotal>0,4,oErp:nColor)
    oErp:nColor :=IF(nTotal>nCantid .AND. nTotal>0,2,oErp:nColor)
-   oErp:cDescri:="Cuentas Contables "+LSTR(nCantid)+"/"+LSTR(nTotal)+" ("+LSTR(RATA(nCantid,nTotal))+"%) en Documento de CxP"+CRLF+" sin Definición ni Propiedad Contable"
+   oErp:cDescri:="Cuentas Contables "+LSTR(nCantid)+"/"+LSTR(nTotal)+" ("+LSTR(RATA(nCantid,nTotal))+"%) en Documento de CxP"+CRLF+"sin Definición ni Propiedad Contable"
    oErp:lPanel :=.T.        // Publicar en el Panel
 
 RETURN .T.
