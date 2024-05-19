@@ -52,15 +52,15 @@ PROCE MAIN(uPar)
 
        IF ValType(oDp:oMsgRun)="O"
          oDp:oMsgRun:oSay:SetText("Actualizado Valor de Divisa Desde www.bcv.org.ve ["+oDp:cUsdBcv+"]")
-         EJECUTAR("GETURLDIV_BCV", .T.,.F. )
+         EJECUTAR("GETURLDIV_BCV",.T.,.T.)
        ELSE
          MsgRun("Actualizado Valor de Divisa Desde www.bcv.org.ve ["+oDp:cUsdBcv+"]"  ,"Por favor Espere",{||EJECUTAR("GETURLDIV_BCV",.T.  )})
        ENDIF
 
-       // 25/08/2023 Si este Proceso Está Activo, Obtiene el valor del COP
-       IF ISSQLFIND("DPPROCESOS","PRC_CODIGO"+GetWhere("=","DPHISTABMOBCOP")+ " AND PRC_ACTIVO=1")
-         EJECUTAR("PUTBCVCOP")
-       ENDIF
+     // 25/08/2023 Si este Proceso Está Activo, Obtiene el valor del COP
+     IF ISSQLFIND("DPPROCESOS","PRC_CODIGO"+GetWhere("=","DPHISTABMOBCOP")+ " AND PRC_ACTIVO=1")
+        EJECUTAR("PUTBCVCOP")
+     ENDIF
 
    ENDIF
 
@@ -114,3 +114,4 @@ PROCE MAIN(uPar)
 
 RETURN .T.
 // EOF
+
