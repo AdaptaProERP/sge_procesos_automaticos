@@ -26,6 +26,22 @@ PROCE MAIN(uPar)
 
    nValor:=SQLGET("DPHISMON","HMN_VALOR","HMN_CODIGO"+GetWhere("=",oDp:cUsdBcv  )+" AND HMN_FECHA"+GetWhere("=",oDp:dFecha))
  
+   // BCV Publica el martes, debido a que el día lunes es feriado bancario
+   cWhere:="HMN_CODIGO"+GetWhere("=",oDp:cUsdBcv  )+" AND HMN_FECHA"+GetWhere("=",oDp:dFecha)
+
+   IF nValor>0 .AND. DOW(dFecha)=3 .AND. (DOW(oDp:dFecha)=7 .OR. DOW(oDp:dFecha)=1) .AND. !ISSQLFIND("DPHISMON",cWhere)
+
+       EJECUTAR("CREATERECORD","DPHISMON",{"HMN_CODIGO","HMN_FECHA"  ,"HMN_HORA","HMN_VALOR"},;
+                                          {oDp:cUsdBcv ,dFecha       ,"00:00:00"   ,nValor  },NIL,.T.,cWhere)
+   ENDIF
+
+   // 11/09/2023
+   IF nValor>0 .AND. DOW(dFecha)=3 .AND. DOW(oDp:dFecha)=2 .AND. !ISSQLFIND("DPHISMON",cWhere)
+ 
+      EJECUTAR("CREATERECORD","DPHISMON",{"HMN_CODIGO","HMN_FECHA"  ,"HMN_HORA","HMN_VALOR"},;
+                                         {oDp:cUsdBcv ,oDp:dFecha   ,"00:00:00"   ,nValor  },NIL,.T.,cWhere)
+   ENDIF
+
    IF nValor=0 .AND. oDp:lPanel  
 
       EJECUTAR("WEBRUN",cUrl,.F.)
@@ -39,12 +55,6 @@ PROCE MAIN(uPar)
 
    ENDIF
 
-   // 11/09/2023
-   IF DOW(dFecha)=3 .AND. DOW(oDp:dFecha)=2 .AND. !ISSQLFIND("DPHISMON",cWhere)
- 
-      EJECUTAR("CREATERECORD","DPHISMON",{"HMN_CODIGO","HMN_FECHA"  ,"HMN_HORA","HMN_VALOR"},;
-                                         {oDp:cUsdBcv ,oDp:dFecha   ,"00:00:00"   ,nValor  },NIL,.T.,cWhere)
-   ENDIF
 
    cWhere:=GetWhereAnd("DIA_FECHA",dFecha,oDp:dFecha)
 

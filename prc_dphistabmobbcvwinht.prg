@@ -12,7 +12,7 @@ Colores
 PROCE MAIN(uPar)
    LOCAL cSql,cWhere
    LOCAL dFecha:=NIL
-   LOCAL nCant,nValor,nDias:=0
+   LOCAL nCant,nValor,nDias:=0,dFchBCV
 
    DEFAULT oDp:cUsdBcv:="DBC",;
            oDp:cPictureDivisa:="999,999,999.99999"
@@ -20,14 +20,32 @@ PROCE MAIN(uPar)
    oDp:dFechaBcv:=oDp:dFecha
 
    dFecha :=SQLGET("DPHISMON","MAX(HMN_FECHA)","HMN_CODIGO"+GetWhere("=",oDp:cUsdBcv  )+" GROUP BY HMN_CODIGO ORDER BY HMN_FECHA LIMIT 1 ")
+   dFchBCV:=dFecha
 
    // Cotización Publicada el Martes por el BCV cuando el lunes no hay Actividad Bancaria
    cWhere:="HMN_CODIGO"+GetWhere("=",oDp:cUsdBcv  )+" AND HMN_FECHA"+GetWhere("=",oDp:dFecha)
-
    nValor:=SQLGET("DPHISMON","HMN_VALOR","HMN_CODIGO"+GetWhere("=",oDp:cUsdBcv  )+" AND HMN_FECHA"+GetWhere("=",oDp:dFecha))
 
+   // Domingo
+   IF nValor=0 .AND. DOW(dFecha)=1
+      dFecha:=dFecha+1 // Lunes
+      nValor:=SQLGET("DPHISMON","HMN_VALOR","HMN_CODIGO"+GetWhere("=","DBC")+" AND HMN_FECHA"+GetWhere("=",dFecha))
+   ENDIF
+
+   // Sabado
+   IF nValor=0 .AND. DOW(dFecha)=7
+      dFecha:=dFecha+2 // Lunes
+      nValor:=SQLGET("DPHISMON","HMN_VALOR","HMN_CODIGO"+GetWhere("=","DBC")+" AND HMN_FECHA"+GetWhere("=",dFecha))
+   ENDIF
+
+   // Lunes, buscara el dolar el dia martes
+   IF nValor=0 .AND. DOW(dFecha)=2
+      dFecha:=dFecha+1 // Lunes
+      nValor:=SQLGET("DPHISMON","HMN_VALOR","HMN_CODIGO"+GetWhere("=","DBC")+" AND HMN_FECHA"+GetWhere("=",dFecha))
+   ENDIF
+
    // 11/09/2023
-   IF DOW(dFecha)=3 .AND. DOW(oDp:dFecha)=2 .AND. !ISSQLFIND("DPHISMON",cWhere)
+   IF nValor>0 .AND. DOW(dFecha)=3 .AND. DOW(oDp:dFecha)=2 .AND. !ISSQLFIND("DPHISMON",cWhere)
  
       EJECUTAR("CREATERECORD","DPHISMON",{"HMN_CODIGO","HMN_FECHA"  ,"HMN_HORA","HMN_VALOR"},;
                                          {oDp:cUsdBcv ,oDp:dFecha   ,"00:00:00"   ,nValor  },NIL,.T.,cWhere)
@@ -93,7 +111,7 @@ PROCE MAIN(uPar)
    ELSE
 
      oErp:nColor :=3
-     oErp:cDescri:=" Valor Actual Dólar www.bcv.org.ve/ ("+oDp:cUsdBcv  +") Hoy "+DTOC(dFecha)+CRLF+;
+     oErp:cDescri:=" Valor Actual Dólar www.bcv.org.ve/ ("+oDp:cUsdBcv  +") Fecha "+DTOC(dFchBCV)+CRLF+;
                    " Valor: "+ALLTRIM(TRAN(nValor,oDp:cPictureDivisa))+CRLF+;
                    LSTR(nDias)+" sin Registro desde el "+DTOC(oDp:dFchInicio)+" hasta el "+DTOC(oDp:dFecha)
 
